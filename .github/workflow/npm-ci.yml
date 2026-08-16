@@ -1,0 +1,28 @@
+name: ci => deploy npm package
+
+on:
+pull_request:
+  push: branches
+    - feat/packages
+
+concurrency:
+   group: ${{ github.workflow }}-${{ github.ref }}
+   cancel-in-progress: true
+
+jobs:
+ ci:
+  runs-on: ubuntu-latest
+
+  steps:
+    - uses: actions/checkout@v4
+
+    - name: use node
+      uses: actions/setup-node@v4
+      with:
+         node-version: "22"
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Run CI
+      run: npm run ci
