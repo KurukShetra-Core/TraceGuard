@@ -1,3 +1,3 @@
-import Hello from "./utils/check.js";
+import Hello from "./utils/check";
 
 console.log(Hello());
