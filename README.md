@@ -124,7 +124,7 @@ The objective is to allow developers to understand the state of their system wit
 
 Important events can eventually trigger notifications through mechanisms such as:
 
-_Webhooks
+- Webhooks
 - Email
 - Slack
 - Other supported notification channels
