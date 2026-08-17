@@ -1,3 +1,3 @@
-import Hello from "./utils/check";
+import { logger } from "./utils/logger";
 
-console.log(Hello());
+logger.info("hello");
