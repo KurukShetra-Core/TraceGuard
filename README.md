@@ -1,8 +1,11 @@
 # Problem Statement
 
 Modern applications, especially microservice-based systems, generate a large amount of logs and system events. When an error occurs, developers often need to search through multiple services, files, terminals, and code paths to identify the source of the problem.
+
 For example, commands such as grep -R "error" can help locate errors, but this approach becomes inefficient as the project grows. It is difficult to correlate application errors with system-level problems such as high CPU usage, memory issues, disk problems, network failures, DNS errors, or suspicious activity.
+
 This project aims to solve this problem by building a centralized monitoring and log management platform inspired by tools such as Sentry.
+
 The platform will collect application logs, errors, warnings, system information, metrics, and other events from different sources and provide them through a centralized dashboard. This allows developers and system administrators to search, analyze, monitor, and identify issues from a single location.
 
 ## What We are building
