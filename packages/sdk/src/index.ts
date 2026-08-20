@@ -1,3 +1,5 @@
-import Hello from "./utils/check.js";
+// export every function from here
 
-console.log(Hello());
+import { init, getConnection } from "./init";
+
+export { init, getConnection };
