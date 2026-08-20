@@ -1,3 +1,5 @@
-import { logger } from "./utils/logger";
+// export every function from here
 
-logger.info("hello");
+import { init, getConnection } from "./init";
+
+export { init, getConnection };
