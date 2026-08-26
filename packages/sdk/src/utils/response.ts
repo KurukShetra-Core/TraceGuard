@@ -10,7 +10,7 @@ interface SDKError {
 }
 
 // Use Generics for flexible metadata typing
-class SDKResponse<T = TOrigin> {
+export class SDKResponse<T = TOrigin> {
   event: string;
   message: string;
   error: SDKError | null;
@@ -18,11 +18,12 @@ class SDKResponse<T = TOrigin> {
   statusCode: number | null;
   errorType?: string;
   origin: TOrigin;
-
+  stack: any;
   constructor(
     event: string,
     origin: TOrigin, // Moved before optional arg
     statusCode: number | null = null,
+    stack: any,
   ) {
     this.event = event;
     this.origin = origin;
@@ -31,6 +32,7 @@ class SDKResponse<T = TOrigin> {
     this.error = null;
     this.metadata = null;
     this.errorType = undefined;
+    this.stack = stack;
   }
 
   setSuccess(metadata: T, message?: string): this {
