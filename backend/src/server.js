@@ -2,6 +2,9 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 
+// Importing custom error handler middleware
+const { errorHandler } = require('./middleware/errorHandler');
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -20,10 +23,7 @@ app.get("/",(req,res)=>{
 });
 
 // 3. Global Error Handling Middleware (Optional but recommended)
-app.use((err,req,res,next)=>{
-    console.error(err.stack);
-    res.start(500).json({status:"error",message:"Internal Server Error"});
-});
+app.use(errorHandler);
 
 app.listen(PORT,()=>{
     console.log(`Server running on port ${PORT}`);
