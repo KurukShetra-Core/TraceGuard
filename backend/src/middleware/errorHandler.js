@@ -1,13 +1,9 @@
 const errorHandler = (error, req, res, next) => {
-  // We can replace/fallback to console.error
-  const log = global.logger || console;
-
-  log.error("================ ERROR ================");
-  log.error({
+  console.error("================ ERROR ================");
+  console.error({
     message: error?.message || "internal server error",
     stackTrace: error?.stack || "error stack !",
-    // this will safely log the full error object
-    err: error, 
+    err: error,
     route: req.originalUrl,
     method: req.method,
     userId: req.body?.userId || req.params?.userId || null,
