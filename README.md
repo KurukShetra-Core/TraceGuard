@@ -1,134 +1,181 @@
-# Problem Statement
+<div align="center">
 
-Modern applications, especially microservice-based systems, generate a large amount of logs and system events. When an error occurs, developers often need to search through multiple services, files, terminals, and code paths to identify the source of the problem.
+# 🛡️ TraceGuard
 
-For example, commands such as grep -R "error" can help locate errors, but this approach becomes inefficient as the project grows. It is difficult to correlate application errors with system-level problems such as high CPU usage, memory issues, disk problems, network failures, DNS errors, or suspicious activity.
+### Centralized Monitoring & Observability Platform — inspired by Sentry, built for everyone.
 
-This project aims to solve this problem by building a centralized monitoring and log management platform inspired by tools such as Sentry.
+**Collect. Correlate. Catch issues before they catch you.**
 
-The platform will collect application logs, errors, warnings, system information, metrics, and other events from different sources and provide them through a centralized dashboard. This allows developers and system administrators to search, analyze, monitor, and identify issues from a single location.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Status](https://img.shields.io/badge/status-in--development-orange)]()
+[![Made for Hackathon](https://img.shields.io/badge/built%20for-hackathon-blueviolet)]()
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)]()
 
-## What We are building
-We are building a centralized monitoring and observability platform for applications and Linux-based systems.
+[Problem](#-problem-statement) • [What We're Building](#-what-were-building) • [Architecture](#-architecture) • [Features](#-core-features) • [Tech Stack](#-tech-stack) • [Getting Started](#-getting-started) • [Roadmap](#-roadmap) • [Team](#-team)
 
-The platform will consist of:
+</div>
 
-- Linux/system monitoring agents
-- Technology-specific SDKs
-- Event Collector REST API
-- Event processing engine
-- Event queue for buffering and asynchronous processing
-- Centralized MongoDB storage
-- Dashboard and REST API
-- Alerting and notification system
+---
 
-The overall goal is to provide a single place where developers can understand the health of their applications and infrastructure.
+<!-- 
+  📸 ADD A SCREENSHOT / GIF OF YOUR DASHBOARD HERE
+  Example:
+  <p align="center">
+    <img src="docs/assets/dashboard-preview.png" alt="TraceGuard Dashboard" width="800">
+  </p>
+-->
 
-# Core Features
+## 📌 Problem Statement
 
-## 1. Application Error Monitoring
+Modern applications — especially microservice-based systems — generate a flood of logs and system events. When something breaks, developers end up hunting across services, files, terminals, and code paths just to find the source of the problem.
 
-The platform will collect application-level events such as:
+**In short:**
+- 🔍 `grep -R "error"` doesn't scale as projects grow
+- 🧩 App errors are hard to correlate with system issues (CPU, memory, disk, network, DNS)
+- 🗂️ Logs live in silos across services, with no single source of truth
+- ⏱️ Debugging becomes slow, manual, and reactive instead of proactive
 
-- Errors
-- Warnings
-- Fatal errors
-- Informational logs
-- Stack traces
-- Exceptions
-- API/request failures
-- Performance-related events
+**TraceGuard** solves this by building a centralized monitoring and log management platform — collecting logs, errors, metrics, and system events into one dashboard where developers can search, analyze, and act.
 
-Each event can contain useful contextual information such as timestamp, service, environment, request information, and error details.
+---
 
-## 2. Linux System Monitoring
+## 🚀 What We're Building
 
-A Linux monitoring agent will collect system-level information such as:
+A unified observability platform for **applications** and **Linux-based infrastructure**, built from these components:
 
-- CPU usage
-- Memory usage
-- Disk usage
-- Running processes
-- Network information
-- System events
-- Resource-related failures
+| Component | Purpose |
+|---|---|
+| 🖥️ Linux/System Monitoring Agent | Collects CPU, memory, disk, process, and network data |
+| 📦 Technology-specific SDKs | Drop-in libraries for apps to report errors/events |
+| 🌐 Event Collector REST API | Ingests events from agents and SDKs |
+| ⚙️ Event Processing Engine | Parses, validates, filters, and categorizes events |
+| 📬 Event Queue | Buffers events for async, reliable processing |
+| 🗄️ Centralized MongoDB Storage | Stores logs, metrics, traces, and system events |
+| 📊 Dashboard + REST API | Search, visualize, and monitor everything in one place |
+| 🔔 Alerting & Notifications | Flags critical issues in real time |
 
-This allows application problems to be analyzed together with the underlying system state.
+---
 
-## 3. Network and Infrastructure Monitoring
+## 🏗️ Architecture
 
-The platform will be designed to detect and record infrastructure-related issues such as:
+```mermaid
+flowchart LR
+    A[App SDKs] -->|events| C[Event Collector API]
+    B[Linux Monitoring Agent] -->|system metrics| C
+    C --> D[Event Queue]
+    D --> E[Event Processing Engine]
+    E --> F[(MongoDB)]
+    F --> G[Dashboard + REST API]
+    E --> H[Alerting & Notifications]
+    H --> I((Webhook / Email / Slack))
+```
 
-- Network connectivity failures
-- DNS resolution problems
-- Port connectivity issues
-- Connection failures
-- Service availability problems
+---
 
-## 4. Suspicious Activity Detection
+## ✨ Core Features
 
-The monitoring system will collect events that may indicate unusual or suspicious behavior.
+### 1. 🐞 Application Error Monitoring
+Captures errors, warnings, fatal exceptions, stack traces, API/request failures, and performance events — each enriched with timestamp, service, environment, and request context.
 
-Examples include:
+### 2. 🐧 Linux System Monitoring
+A lightweight agent tracks CPU, memory, disk, running processes, network stats, and system-level events — so app issues can be viewed alongside infrastructure health.
 
-- Unexpected processes
-- Unusual network activity
-- Repeated failed requests
-- Abnormal resource usage
-- Unexpected service behavior
+### 3. 🌐 Network & Infrastructure Monitoring
+Detects connectivity failures, DNS resolution issues, port/connection problems, and service availability gaps.
 
-The initial implementation will focus on collecting and identifying such events rather than providing a full security/SIEM solution.
+### 4. 🕵️ Suspicious Activity Detection
+Flags unusual behavior — unexpected processes, abnormal network activity, repeated failed requests, and resource spikes. *(Initial focus: detection & logging, not a full SIEM.)*
 
-## 5. Centralized Log Management
+### 5. 🗂️ Centralized Log Management
+All logs, errors, metrics, traces, and system/network events land in one categorized, searchable place — no more hopping between services.
 
-Instead of checking logs separately across multiple services, logs will be collected and stored centrally.
+### 6. ⚙️ Event Processing
+A dedicated pipeline parses, validates, filters, categorizes, and flags incoming events before storage.
 
-The system will categorize events into areas such as:
+### 7. 📊 Monitoring Dashboard
+Log & error search, live monitoring, system stats, analytics, alerts, and service-level views — all from a single UI.
 
-- Logs
-- Errors
-- Metrics
-- Traces
-- System events
-- Network events
+### 8. 🔔 Alerts & Notifications
+Critical events trigger notifications via Webhooks, Email, Slack, and more — so nobody has to babysit the dashboard.
 
-This makes searching and debugging significantly easier.
+---
 
-## 6. Event Processing
+## 🧰 Tech Stack
 
-Incoming events will pass through a processing layer responsible for:
+| Layer | Technology |
+|---|---|
+| Backend | `Node.js` / `Express` *(update if different)* |
+| Database | MongoDB |
+| SDKs | `packages/sdk` *(specify languages supported)* |
+| Frontend/Dashboard | *(e.g. React, Next.js — update)* |
+| Queue | *(e.g. Redis, RabbitMQ, Kafka — update)* |
+| CI/CD | GitHub Actions (`.github/workflow`) |
 
-- Parsing events
-- Validating data
-- Filtering unnecessary information
-- Categorizing events
-- Detecting potential issues
-- Preparing data for storage
-  
-## 7. Monitoring Dashboard
+---
 
-The frontend dashboard will provide:
+## ⚡ Getting Started
 
-- Log search
-- Error search
-- Live monitoring
-- System statistics
-- Analytics
-- Event details
-- Alerts
-- Service-level information
+```bash
+# Clone the repository
+git clone https://github.com/KurukShetra-Core/TraceGuard.git
+cd TraceGuard
 
-The objective is to allow developers to understand the state of their system without manually searching through individual services.
+# Install backend dependencies
+cd backend
+npm install        # or pip install -r requirements.txt
 
-## 8. Alerts and Notifications
+# Set up environment variables
+cp .env.example .env
 
-Important events can eventually trigger notifications through mechanisms such as:
+# Run the backend
+npm run dev
 
-- Webhooks
-- Email
-- Slack
-- Other supported notification channels
+# (In a separate terminal) install & run the monitoring agent
+cd ../packages/sdk
+npm install
+npm start
+```
 
-This will allow developers or on-call teams to become aware of critical failures without continuously watching the dashboard.
+> 📖 See [`docs/packages`](docs/packages) for detailed setup of individual SDKs and agents.
 
-Author Shivraj
+---
+
+## 🗺️ Roadmap
+
+- [x] Problem definition & system design
+- [x] Event Collector API (basic)
+- [ ] Linux monitoring agent
+- [ ] Event processing & queue integration
+- [ ] MongoDB schema & storage layer
+- [ ] Dashboard UI (search, live monitoring, analytics)
+- [ ] Alerting integrations (Webhook, Email, Slack)
+- [ ] Suspicious activity detection module
+
+---
+
+## 👥 Team
+
+| Name | Role | GitHub |
+|---|---|---|
+| Nikhil Wankhede | Backend And System Architecture | [@nikhil-dev-395](https://github.com/nikhil-dev-395) |
+| Siddharth Kapadane | Frontend | [@siddharthkapadne](https://github.com/siddharthkapadne777) |
+| Shivraj Jagtap | Backend | [@shivraj2328](https://github.com/shivraj2328) |
+| Fatima Shaikh | Database | [@FatimaNShaikh](https://github.com/FatimaNShaikh) |
+
+---
+
+## 🤝 Contributing
+
+Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/KurukShetra-Core/TraceGuard/issues).
+
+## 📄 License
+
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+
+---
+
+<div align="center">
+
+Made with ❤️ by **TraceOps** for the hackathon.
+
+</div>
