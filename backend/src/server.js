@@ -4,6 +4,8 @@ require("dotenv").config();
 
 // Importing custom error handler middleware
 const { errorHandler } = require('./middleware/errorHandler');
+const connectDB = require("./config/db");
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -25,6 +27,8 @@ app.get("/",(req,res)=>{
 
 // 3. Global Error Handling Middleware (Optional but recommended)
 app.use(errorHandler);
+connectDB();
+
 
 app.listen(PORT,()=>{
     console.log(`Server running on port ${PORT}`);
