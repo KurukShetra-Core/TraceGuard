@@ -1,6 +1,8 @@
+const { logger } = require("../utils/logger");
+
 const errorHandler = (error, req, res, next) => {
-  console.error("================ ERROR ================");
-  console.error({
+  logger.error({
+    msg: "Internal Server Error Occurred",
     message: error?.message || "internal server error",
     stackTrace: error?.stack || "error stack !",
     err: error,
@@ -21,3 +23,4 @@ const errorHandler = (error, req, res, next) => {
 };
 
 module.exports = { errorHandler };
+
