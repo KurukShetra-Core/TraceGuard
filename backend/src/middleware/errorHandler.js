@@ -11,16 +11,16 @@ const errorHandler = (error, req, res, next) => {
     userId: req.body?.userId || req.params?.userId || null,
   });
 
-  const errMessage = error?.error?.description || error.message || "internal server error";
+  // Determine the final error message cleanly in one place
+  const errorMessage = error?.error?.description || error?.message || "Internal Server Error";
   const status = typeof error.statusCode === "number" ? error.statusCode : 500;
 
   return res.status(status).json({
     success: false,
-    message: error.message || errMessage || "Internal Server Error",
+    message: errorMessage,
     errors: error.errors || [],
     data: error.data || null,
   });
 };
 
 module.exports = { errorHandler };
-
