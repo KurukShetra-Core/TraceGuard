@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+::-webkit-scrollbar{
+  display: none;
+}
+
+button, a{
+  cursor: pointer;
+}
