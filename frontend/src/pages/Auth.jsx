@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Mail, Lock, User, ShieldCheck, KeyRound, ArrowRight, RefreshCw, ArrowLeft, Briefcase } from 'lucide-react';
+import { Mail, Lock, User, ShieldCheck, KeyRound, ArrowRight, RefreshCw, ArrowLeft, Briefcase, AlertCircle } from 'lucide-react';
 
 export default function Auth({ onLoginSuccess }) {
   const [isRegister, setIsRegister] = useState(false);
-  const [step, setStep] = useState('credentials');
+  const [step, setStep] = useState('credentials'); // 'credentials' | 'otp'
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -14,8 +14,26 @@ export default function Auth({ onLoginSuccess }) {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [timer, setTimer] = useState(30);
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
   const inputRefs = useRef([]);
 
+  // Seed default demo user if localStorage is empty
+  useEffect(() => {
+    const existingUsers = localStorage.getItem('traceguard_users');
+    if (!existingUsers) {
+      const demoUsers = [
+        {
+          name: 'Alex Mercer',
+          email: 'developer@traceguard.com',
+          password: 'password123',
+          role: 'Developer'
+        }
+      ];
+      localStorage.setItem('traceguard_users', JSON.stringify(demoUsers));
+    }
+  }, []);
+
+  // Timer countdown for OTP resend
   useEffect(() => {
     let interval;
     if (step === 'otp' && timer > 0) {
@@ -24,23 +42,51 @@ export default function Auth({ onLoginSuccess }) {
     return () => clearInterval(interval);
   }, [step, timer]);
 
-  // Helper function to format email prefixes (e.g., "john.doe@gmail.com" -> "John Doe")
-  const getFormattedName = () => {
-    if (formData.name.trim()) return formData.name.trim();
-    if (!formData.email) return 'Developer';
-    
-    const prefix = formData.email.split('@')[0];
-    return prefix
-      .replace(/[._-]/g, ' ')
-      .replace(/\b\w/g, (char) => char.toUpperCase());
+  // Clear errors when toggling tabs
+  const handleTabSwitch = (registerState) => {
+    setIsRegister(registerState);
+    setErrorMsg('');
   };
 
+  // Step 1: Validate Credentials Against localStorage
   const handleAuthSubmit = (e) => {
     e.preventDefault();
-    if (!formData.email || !formData.password) return;
+    setErrorMsg('');
+
+    if (!formData.email || !formData.password) {
+      setErrorMsg('Please enter both email and password.');
+      return;
+    }
+
+    const registeredUsers = JSON.parse(localStorage.getItem('traceguard_users') || '[]');
+    const existingUser = registeredUsers.find(
+      (u) => u.email.toLowerCase() === formData.email.toLowerCase()
+    );
+
     if (isRegister) {
-      if (!formData.name) return;
-      if (formData.role === 'Other' && !formData.customRole.trim()) return;
+      // REGISTRATION CHECKS
+      if (!formData.name.trim()) {
+        setErrorMsg('Please enter your full name.');
+        return;
+      }
+      if (formData.role === 'Other' && !formData.customRole.trim()) {
+        setErrorMsg('Please specify your custom role.');
+        return;
+      }
+      if (existingUser) {
+        setErrorMsg('An account with this email already exists. Please Sign In.');
+        return;
+      }
+    } else {
+      // LOGIN CHECKS
+      if (!existingUser) {
+        setErrorMsg('No account found with this email. Please create an account first.');
+        return;
+      }
+      if (existingUser.password !== formData.password) {
+        setErrorMsg('Incorrect password. Please try again.');
+        return;
+      }
     }
 
     setLoading(true);
@@ -51,6 +97,7 @@ export default function Auth({ onLoginSuccess }) {
     }, 800);
   };
 
+  // OTP Auto-Focus Navigation
   const handleOtpChange = (value, index) => {
     if (!/^\d*$/.test(value)) return;
     const newOtp = [...otp];
@@ -68,6 +115,7 @@ export default function Auth({ onLoginSuccess }) {
     }
   };
 
+  // Step 2: Final Verification -> Save to Database & Log In
   const handleVerifyOtp = (e) => {
     e.preventDefault();
     if (otp.join('').length < 6) return;
@@ -76,25 +124,48 @@ export default function Auth({ onLoginSuccess }) {
     setTimeout(() => {
       setLoading(false);
 
-      const resolvedRole = isRegister
-        ? (formData.role === 'Other' ? (formData.customRole.trim() || 'Contributor') : formData.role)
-        : 'Developer';
+      const registeredUsers = JSON.parse(localStorage.getItem('traceguard_users') || '[]');
+      let userData;
 
-      const userData = {
-        name: getFormattedName(), // Standardized name output
-        email: formData.email,
-        role: resolvedRole,
+      if (isRegister) {
+        const resolvedRole = formData.role === 'Other' ? (formData.customRole.trim() || 'Contributor') : formData.role;
+        userData = {
+          name: formData.name.trim(),
+          email: formData.email.toLowerCase(),
+          password: formData.password,
+          role: resolvedRole
+        };
+
+        // Save new user into registered users array
+        const updatedUsers = [...registeredUsers, userData];
+        localStorage.setItem('traceguard_users', JSON.stringify(updatedUsers));
+      } else {
+        // Fetch existing registered user details
+        const foundUser = registeredUsers.find((u) => u.email.toLowerCase() === formData.email.toLowerCase());
+        userData = {
+          name: foundUser.name,
+          email: foundUser.email,
+          role: foundUser.role
+        };
+      }
+
+      // Save session user
+      const sessionUser = {
+        name: userData.name,
+        email: userData.email,
+        role: userData.role,
         token: 'mock-jwt-2fa-token'
       };
 
-      localStorage.setItem('traceguard_active_user', JSON.stringify(userData));
-      onLoginSuccess(userData);
+      localStorage.setItem('traceguard_active_user', JSON.stringify(sessionUser));
+      onLoginSuccess(sessionUser);
     }, 1000);
   };
 
   return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-xl p-8 shadow-2xl">
+        {/* Header Branding */}
         <div className="flex items-center gap-3 mb-6">
           <div className="p-2.5 bg-indigo-500/10 border border-indigo-500/20 rounded-lg text-indigo-400">
             <ShieldCheck className="w-6 h-6" />
@@ -105,12 +176,21 @@ export default function Auth({ onLoginSuccess }) {
           </div>
         </div>
 
+        {/* Error Alert Message */}
+        {errorMsg && (
+          <div className="mb-5 p-3 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center gap-2.5 text-red-400 text-xs">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span>{errorMsg}</span>
+          </div>
+        )}
+
         {step === 'credentials' ? (
           <>
+            {/* Tab Switching */}
             <div className="flex border-b border-slate-800 mb-6">
               <button
                 type="button"
-                onClick={() => setIsRegister(false)}
+                onClick={() => handleTabSwitch(false)}
                 className={`flex-1 py-2 text-sm font-medium border-b-2 transition-colors ${
                   !isRegister
                     ? 'border-indigo-500 text-indigo-400'
@@ -121,7 +201,7 @@ export default function Auth({ onLoginSuccess }) {
               </button>
               <button
                 type="button"
-                onClick={() => setIsRegister(true)}
+                onClick={() => handleTabSwitch(true)}
                 className={`flex-1 py-2 text-sm font-medium border-b-2 transition-colors ${
                   isRegister
                     ? 'border-indigo-500 text-indigo-400'
@@ -142,7 +222,7 @@ export default function Auth({ onLoginSuccess }) {
                       <input
                         type="text"
                         required
-                        placeholder="e.g. John Doe"
+                        placeholder="e.g. Alex Mercer"
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         className="w-full pl-10 pr-4 py-2 bg-slate-950 border border-slate-800 rounded-lg text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
@@ -225,6 +305,7 @@ export default function Auth({ onLoginSuccess }) {
             </form>
           </>
         ) : (
+          /* OTP Screen */
           <form onSubmit={handleVerifyOtp} className="space-y-6">
             <div>
               <button
