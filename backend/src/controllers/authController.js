@@ -1,3 +1,4 @@
+const { logger } = require("../utils/logger");
 const jwt = require("jsonwebtoken");
 
 const bcrypt = require("bcryptjs");
@@ -15,6 +16,12 @@ const { sendOTPEmail } = require("../services/emailService");
 
 const register = async (req, res, next) => {
     try {
+
+        logger.info({
+    msg: "User registration started",
+    email: req.body.email
+});
+
         const { email, password } = req.body;
 
         // Validate input
@@ -29,6 +36,12 @@ const register = async (req, res, next) => {
         const existingUser = await User.findOne({ email });
 
         if (existingUser) {
+
+            logger.warn({
+    msg: "Registration failed: user already exists",
+    email
+});
+
             return res.status(409).json({
                 status: "error",
                 message: "User already exists"
@@ -44,6 +57,12 @@ const register = async (req, res, next) => {
             passwordHash,
             isVerified: false
         });
+
+        logger.info({
+    msg: "User created successfully",
+    userId: user._id.toString(),
+    email: user.email
+});
 
         // Generate OTP
         const otp = generateOTP();
@@ -61,6 +80,11 @@ const register = async (req, res, next) => {
         // Send OTP
         await sendOTPEmail(email, otp);
 
+        logger.info({
+    msg: "Registration OTP sent successfully",
+    email
+});
+
         return res.status(201).json({
             status: "success",
             message: "Registration successful. OTP sent to your email."
@@ -72,6 +96,12 @@ const register = async (req, res, next) => {
 
 const verifyOTP = async (req, res, next) => {
     try {
+
+        logger.info({
+    msg: "OTP verification started",
+    email: req.body.email
+});    
+
         const { email, otp } = req.body;
 
         if (!email || !otp) {
@@ -84,6 +114,12 @@ const verifyOTP = async (req, res, next) => {
         const otpRecord = await OTP.findOne({ email });
 
         if (!otpRecord) {
+
+            logger.warn({
+    msg: "OTP verification failed: OTP invalid or expired",
+    email
+});
+
             return res.status(400).json({
                 status: "error",
                 message: "OTP is invalid or expired"
@@ -96,6 +132,12 @@ const verifyOTP = async (req, res, next) => {
         );
 
         if (!isOTPValid) {
+
+            logger.warn({
+    msg: "OTP verification failed: invalid OTP",
+    email
+});
+
             return res.status(400).json({
                 status: "error",
                 message: "Invalid OTP"
@@ -105,6 +147,12 @@ const verifyOTP = async (req, res, next) => {
         const user = await User.findOne({ email });
 
         if (!user) {
+
+            logger.error({
+    msg: "OTP verification failed: user not found",
+    email
+});
+            
             return res.status(404).json({
                 status: "error",
                 message: "User not found"
@@ -115,6 +163,12 @@ const verifyOTP = async (req, res, next) => {
         await user.save();
 
         await OTP.deleteOne({ _id: otpRecord._id });
+
+        logger.info({
+    msg: "Email verified successfully",
+    userId: user._id.toString(),
+    email: user.email
+});
 
         return res.status(200).json({
             status: "success",
@@ -127,6 +181,12 @@ const verifyOTP = async (req, res, next) => {
 
 const resendOTP = async (req, res, next) => {
     try {
+
+        logger.info({
+    msg: "OTP resend requested",
+    email: req.body.email
+});
+
         const { email } = req.body;
 
         if (!email) {
@@ -139,6 +199,12 @@ const resendOTP = async (req, res, next) => {
         const user = await User.findOne({ email });
 
         if (!user) {
+
+            logger.warn({
+    msg: "OTP resend failed: user not found",
+    email
+});
+
             return res.status(404).json({
                 status: "error",
                 message: "User not found"
@@ -146,6 +212,12 @@ const resendOTP = async (req, res, next) => {
         }
 
         if (user.isVerified) {
+
+logger.warn({
+    msg: "OTP resend failed: email already verified",
+    email
+});
+
             return res.status(400).json({
                 status: "error",
                 message: "Email is already verified"
@@ -168,6 +240,11 @@ const resendOTP = async (req, res, next) => {
         // Send new OTP
         await sendOTPEmail(email, otp);
 
+        logger.info({
+    msg: "New OTP sent successfully",
+    email
+});
+
         return res.status(200).json({
             status: "success",
             message: "New OTP sent to your email"
@@ -179,6 +256,12 @@ const resendOTP = async (req, res, next) => {
 
 const login = async (req, res, next) => {
     try {
+
+        logger.info({
+    msg: "User login started",
+    email: req.body.email
+});
+
         const { email, password } = req.body;
 
         // Validate input
@@ -193,6 +276,12 @@ const login = async (req, res, next) => {
         const user = await User.findOne({ email });
 
         if (!user) {
+
+            logger.warn({
+    msg: "Login failed: user not found",
+    email
+});
+
             return res.status(401).json({
                 status: "error",
                 message: "Invalid email or password"
@@ -206,6 +295,12 @@ const login = async (req, res, next) => {
         );
 
         if (!isPasswordValid) {
+
+            logger.warn({
+    msg: "Login failed: invalid password",
+    email
+});
+
             return res.status(401).json({
                 status: "error",
                 message: "Invalid email or password"
@@ -214,6 +309,12 @@ const login = async (req, res, next) => {
 
         // Check email verification
         if (!user.isVerified) {
+
+            logger.warn({
+    msg: "Login failed: email not verified",
+    email
+});
+
             return res.status(403).json({
                 status: "error",
                 message: "Please verify your email before logging in"
@@ -230,6 +331,12 @@ const login = async (req, res, next) => {
         expiresIn: "1d"
     }
 );
+
+logger.info({
+    msg: "User login successful",
+    userId: user._id.toString(),
+    email: user.email
+});
 
 return res.status(200).json({
     status: "success",
